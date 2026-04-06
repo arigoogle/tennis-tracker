@@ -36,19 +36,25 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
       </div>
 
       {/* Scoreboard */}
-      <div className="glass" style={{ 
-        display: 'flex', 
-        borderRadius: 16, 
+      <div className="glass" style={{
+        borderRadius: 16,
         overflow: 'hidden',
         marginBottom: 'var(--spacing-md)',
         boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
       }}>
-        {/* Player Headers */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '12px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, textAlign: 'center', backgroundColor: 'var(--p1-color)', color: 'white' }}>
+        {/* Player name headers */}
+        <div style={{ display: 'flex' }}>
+          <div style={{ flex: 1, padding: '12px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, textAlign: 'center', backgroundColor: 'var(--p1-color)', color: 'white' }}>
             {state.config.playerA}
           </div>
-          <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <div style={{ flex: 1, padding: '12px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, textAlign: 'center', backgroundColor: 'var(--p2-color)', color: 'white' }}>
+            {state.config.playerB}
+          </div>
+        </div>
+
+        {/* Current sets / games row */}
+        <div style={{ display: 'flex' }}>
+          <div style={{ flex: 1, display: 'flex' }}>
             <div style={{ flex: 1, padding: '16px', textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Sets</div>
               <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{state.playerA.sets}</div>
@@ -58,14 +64,7 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
               <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{state.playerA.games}</div>
             </div>
           </div>
-        </div>
-
-        {/* Player B */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-          <div style={{ padding: '12px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, textAlign: 'center', backgroundColor: 'var(--p2-color)', color: 'white' }}>
-            {state.config.playerB}
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'row' }}>
+          <div style={{ flex: 1, display: 'flex' }}>
             <div style={{ flex: 1, padding: '16px', textAlign: 'center', borderRight: '1px solid var(--border-color)' }}>
               <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Games</div>
               <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{state.playerB.games}</div>
@@ -76,6 +75,29 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
             </div>
           </div>
         </div>
+
+        {/* Set history */}
+        {state.setHistory.length > 0 && (
+          <div style={{ borderTop: '1px solid var(--border-color)', padding: '8px 16px' }}>
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: 4 }}>Set History</div>
+            <div style={{ display: 'flex', gap: 12 }}>
+              {state.setHistory.map((s, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.9rem' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text-secondary)', marginRight: 2 }}>S{i + 1}</span>
+                  <span style={{
+                    fontWeight: 700,
+                    color: s.playerA > s.playerB ? 'var(--p1-color)' : 'var(--text-secondary)'
+                  }}>{s.playerA}</span>
+                  <span style={{ color: 'var(--text-secondary)' }}>–</span>
+                  <span style={{
+                    fontWeight: 700,
+                    color: s.playerB > s.playerA ? 'var(--p2-color)' : 'var(--text-secondary)'
+                  }}>{s.playerB}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Main Points Area (Tap Targets) */}

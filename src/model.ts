@@ -14,11 +14,17 @@ export interface PlayerScore {
   sets: number;
 }
 
+export interface SetResult {
+  playerA: number;
+  playerB: number;
+}
+
 export interface MatchState {
   config: MatchConfig;
   status: 'setup' | 'playing' | 'finished';
   playerA: PlayerScore;
   playerB: PlayerScore;
+  setHistory: SetResult[]; // Completed sets scores
   history: MatchState[]; // For undo functionality
 }
 
@@ -34,6 +40,7 @@ export const initialMatchState: MatchState = {
   status: 'setup',
   playerA: { points: 0, games: 0, sets: 0 },
   playerB: { points: 0, games: 0, sets: 0 },
+  setHistory: [],
   history: [],
 };
 
@@ -65,13 +72,16 @@ export function scorePoint(state: MatchState, player: 'A' | 'B'): MatchState {
   }
 
   // Set Logic
+  let newSetHistory = state.setHistory;
   if (pA.points === 0 && pB.points === 0) {
     const setRes = checkSetLogic(pA.games, pB.games, config.gamesPerSet);
     if (setRes.wonSetA) {
+      newSetHistory = [...newSetHistory, { playerA: pA.games, playerB: pB.games }];
       pA.sets += 1;
       pA.games = 0;
       pB.games = 0;
     } else if (setRes.wonSetB) {
+      newSetHistory = [...newSetHistory, { playerA: pA.games, playerB: pB.games }];
       pB.sets += 1;
       pB.games = 0;
       pA.games = 0;
@@ -82,6 +92,7 @@ export function scorePoint(state: MatchState, player: 'A' | 'B'): MatchState {
     ...state,
     playerA: pA,
     playerB: pB,
+    setHistory: newSetHistory,
     history: [...state.history, historySnapshot],
   };
 }
