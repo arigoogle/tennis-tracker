@@ -1,5 +1,5 @@
 import React from 'react';
-import { type MatchState, scorePoint, undoLastPoint, displayPoint } from '../model';
+import { type MatchState, scorePoint, undoLastPoint, swapServe, displayPoint } from '../model';
 import { Undo2, Settings } from 'lucide-react';
 
 interface Props {
@@ -15,6 +15,10 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
 
   const handleUndo = () => {
     setState(s => undoLastPoint(s));
+  };
+
+  const handleSwapServe = () => {
+    setState(s => swapServe(s));
   };
 
   return (
@@ -44,12 +48,36 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
       }}>
         {/* Player name headers */}
         <div style={{ display: 'flex' }}>
-          <div style={{ flex: 1, padding: '12px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, textAlign: 'center', backgroundColor: 'var(--p1-color)', color: 'white' }}>
+          <button
+            type="button"
+            onClick={handleSwapServe}
+            style={{
+              flex: 1, padding: '12px', borderBottom: '1px solid var(--border-color)',
+              fontWeight: 600, textAlign: 'center', backgroundColor: 'var(--p1-color)',
+              color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 6, cursor: 'pointer', border: 'none',
+            }}
+          >
+            {state.serving === 'A' && (
+              <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#facc15', display: 'inline-block', flexShrink: 0 }} />
+            )}
             {state.config.playerA}
-          </div>
-          <div style={{ flex: 1, padding: '12px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, textAlign: 'center', backgroundColor: 'var(--p2-color)', color: 'white' }}>
+          </button>
+          <button
+            type="button"
+            onClick={handleSwapServe}
+            style={{
+              flex: 1, padding: '12px', borderBottom: '1px solid var(--border-color)',
+              fontWeight: 600, textAlign: 'center', backgroundColor: 'var(--p2-color)',
+              color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 6, cursor: 'pointer', border: 'none',
+            }}
+          >
+            {state.serving === 'B' && (
+              <span style={{ width: 10, height: 10, borderRadius: '50%', backgroundColor: '#facc15', display: 'inline-block', flexShrink: 0 }} />
+            )}
             {state.config.playerB}
-          </div>
+          </button>
         </div>
 
         {/* Current sets / games row */}

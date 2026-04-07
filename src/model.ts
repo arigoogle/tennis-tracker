@@ -6,6 +6,7 @@ export interface MatchConfig {
   deuceMode: DeuceMode;
   playerA: string;
   playerB: string;
+  firstServe: 'A' | 'B';
 }
 
 export interface PlayerScore {
@@ -24,6 +25,7 @@ export interface MatchState {
   status: 'setup' | 'playing' | 'finished';
   playerA: PlayerScore;
   playerB: PlayerScore;
+  serving: 'A' | 'B';
   setHistory: SetResult[]; // Completed sets scores
   history: MatchState[]; // For undo functionality
 }
@@ -33,6 +35,7 @@ export const initialConfig: MatchConfig = {
   deuceMode: 'standard',
   playerA: 'Player A',
   playerB: 'Player B',
+  firstServe: 'A',
 };
 
 export const initialMatchState: MatchState = {
@@ -40,6 +43,7 @@ export const initialMatchState: MatchState = {
   status: 'setup',
   playerA: { points: 0, games: 0, sets: 0 },
   playerB: { points: 0, games: 0, sets: 0 },
+  serving: 'A',
   setHistory: [],
   history: [],
 };
@@ -71,8 +75,13 @@ export function scorePoint(state: MatchState, player: 'A' | 'B'): MatchState {
     }
   }
 
-  // Set Logic
+  // Set Logic — also track serve switches per game won
   let newSetHistory = state.setHistory;
+  let serving = state.serving;
+
+  const gameWon = pA.points === 0 && pB.points === 0 &&
+    (pA.games !== state.playerA.games || pB.games !== state.playerB.games);
+
   if (pA.points === 0 && pB.points === 0) {
     const setRes = checkSetLogic(pA.games, pB.games, config.gamesPerSet);
     if (setRes.wonSetA) {
@@ -88,10 +97,15 @@ export function scorePoint(state: MatchState, player: 'A' | 'B'): MatchState {
     }
   }
 
+  if (gameWon) {
+    serving = serving === 'A' ? 'B' : 'A';
+  }
+
   return {
     ...state,
     playerA: pA,
     playerB: pB,
+    serving,
     setHistory: newSetHistory,
     history: [...state.history, historySnapshot],
   };
@@ -144,6 +158,10 @@ function checkSetLogic(gamesA: number, gamesB: number, gamesPerSet: SetMode) {
   return { wonSetA, wonSetB };
 }
 
+export function swapServe(state: MatchState): MatchState {
+  return { ...state, serving: state.serving === 'A' ? 'B' : 'A' };
+}
+
 export function undoLastPoint(state: MatchState): MatchState {
   if (state.history.length === 0) return state;
   const prevState = state.history[state.history.length - 1];
@@ -157,6 +175,7 @@ export function resetMatch(config: MatchConfig): MatchState {
   return {
     ...initialMatchState,
     config,
+    serving: config.firstServe,
     status: 'playing',
   };
 }

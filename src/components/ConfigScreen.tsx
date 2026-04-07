@@ -11,6 +11,7 @@ export const ConfigScreen: React.FC<Props> = ({ initialConfig, onStart }) => {
   const [playerB, setPlayerB] = useState(initialConfig.playerB);
   const [gamesPerSet, setGamesPerSet] = useState<SetMode>(initialConfig.gamesPerSet);
   const [deuceMode, setDeuceMode] = useState<DeuceMode>(initialConfig.deuceMode);
+  const [firstServe, setFirstServe] = useState<'A' | 'B'>(initialConfig.firstServe);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,6 +20,7 @@ export const ConfigScreen: React.FC<Props> = ({ initialConfig, onStart }) => {
       playerB: playerB || 'Player B',
       gamesPerSet,
       deuceMode,
+      firstServe,
     });
   };
 
@@ -34,20 +36,42 @@ export const ConfigScreen: React.FC<Props> = ({ initialConfig, onStart }) => {
           
           <div style={{ marginBottom: 'var(--spacing-md)' }}>
             <label style={{ display: 'block', fontWeight: 600, marginBottom: 'var(--spacing-sm)' }}>Players</label>
-            <input 
-              type="text" 
-              placeholder="Player 1 Name" 
-              value={playerA} 
-              onChange={e => setPlayerA(e.target.value)} 
+            <input
+              type="text"
+              placeholder="Player 1 Name"
+              value={playerA}
+              onChange={e => setPlayerA(e.target.value)}
               required
             />
-            <input 
-              type="text" 
-              placeholder="Player 2 Name" 
-              value={playerB} 
-              onChange={e => setPlayerB(e.target.value)} 
+            <input
+              type="text"
+              placeholder="Player 2 Name"
+              value={playerB}
+              onChange={e => setPlayerB(e.target.value)}
               required
             />
+          </div>
+
+          <div style={{ marginBottom: 'var(--spacing-md)' }}>
+            <label style={{ display: 'block', fontWeight: 600, marginBottom: 'var(--spacing-sm)' }}>First Serve</label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                onClick={() => setFirstServe('A')}
+                className={`btn ${firstServe === 'A' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ flex: 1 }}
+              >
+                {playerA || 'Player A'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setFirstServe('B')}
+                className={`btn ${firstServe === 'B' ? 'btn-primary' : 'btn-secondary'}`}
+                style={{ flex: 1 }}
+              >
+                {playerB || 'Player B'}
+              </button>
+            </div>
           </div>
 
           <div style={{ marginBottom: 'var(--spacing-md)' }}>
