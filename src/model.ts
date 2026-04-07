@@ -18,6 +18,7 @@ export interface PlayerScore {
 export interface SetResult {
   playerA: number;
   playerB: number;
+  duration: number; // seconds
 }
 
 export interface MatchState {
@@ -26,6 +27,7 @@ export interface MatchState {
   playerA: PlayerScore;
   playerB: PlayerScore;
   serving: 'A' | 'B';
+  setStartTime: number; // ms timestamp when current set began
   setHistory: SetResult[]; // Completed sets scores
   history: MatchState[]; // For undo functionality
 }
@@ -44,6 +46,7 @@ export const initialMatchState: MatchState = {
   playerA: { points: 0, games: 0, sets: 0 },
   playerB: { points: 0, games: 0, sets: 0 },
   serving: 'A',
+  setStartTime: 0,
   setHistory: [],
   history: [],
 };
@@ -78,22 +81,28 @@ export function scorePoint(state: MatchState, player: 'A' | 'B'): MatchState {
   // Set Logic — also track serve switches per game won
   let newSetHistory = state.setHistory;
   let serving = state.serving;
+  let setStartTime = state.setStartTime;
 
   const gameWon = pA.points === 0 && pB.points === 0 &&
     (pA.games !== state.playerA.games || pB.games !== state.playerB.games);
 
   if (pA.points === 0 && pB.points === 0) {
     const setRes = checkSetLogic(pA.games, pB.games, config.gamesPerSet);
-    if (setRes.wonSetA) {
-      newSetHistory = [...newSetHistory, { playerA: pA.games, playerB: pB.games }];
-      pA.sets += 1;
-      pA.games = 0;
-      pB.games = 0;
-    } else if (setRes.wonSetB) {
-      newSetHistory = [...newSetHistory, { playerA: pA.games, playerB: pB.games }];
-      pB.sets += 1;
-      pB.games = 0;
-      pA.games = 0;
+    if (setRes.wonSetA || setRes.wonSetB) {
+      const now = Date.now();
+      const duration = Math.floor((now - state.setStartTime) / 1000);
+      if (setRes.wonSetA) {
+        newSetHistory = [...newSetHistory, { playerA: pA.games, playerB: pB.games, duration }];
+        pA.sets += 1;
+        pA.games = 0;
+        pB.games = 0;
+      } else {
+        newSetHistory = [...newSetHistory, { playerA: pA.games, playerB: pB.games, duration }];
+        pB.sets += 1;
+        pB.games = 0;
+        pA.games = 0;
+      }
+      setStartTime = now;
     }
   }
 
@@ -106,6 +115,7 @@ export function scorePoint(state: MatchState, player: 'A' | 'B'): MatchState {
     playerA: pA,
     playerB: pB,
     serving,
+    setStartTime,
     setHistory: newSetHistory,
     history: [...state.history, historySnapshot],
   };
@@ -176,8 +186,15 @@ export function resetMatch(config: MatchConfig): MatchState {
     ...initialMatchState,
     config,
     serving: config.firstServe,
+    setStartTime: Date.now(),
     status: 'playing',
   };
+}
+
+export function formatDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
 export function displayPoint(points: number): string {

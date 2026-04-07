@@ -1,5 +1,5 @@
-import React from 'react';
-import { type MatchState, scorePoint, undoLastPoint, swapServe, displayPoint } from '../model';
+import React, { useEffect, useState } from 'react';
+import { type MatchState, scorePoint, undoLastPoint, swapServe, displayPoint, formatDuration } from '../model';
 import { Undo2, Settings } from 'lucide-react';
 
 interface Props {
@@ -9,6 +9,15 @@ interface Props {
 }
 
 export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, []);
+
+  const elapsedSeconds = Math.floor((now - state.setStartTime) / 1000);
+
   const handleScore = (player: 'A' | 'B') => {
     setState(s => scorePoint(s, player));
   };
@@ -23,15 +32,26 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
 
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-      
+
       {/* Top Control Bar */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', padding: 'var(--spacing-sm) 0', marginBottom: 'var(--spacing-sm)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: 'var(--spacing-sm) 0', marginBottom: 'var(--spacing-sm)' }}>
         <button onClick={onReset} className="btn btn-secondary" style={{ padding: '8px' }}>
           <Settings size={20} />
         </button>
-        <button 
-          onClick={handleUndo} 
-          className="btn btn-secondary" 
+
+        {/* Set timer */}
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Set {state.setHistory.length + 1}
+          </div>
+          <div style={{ fontSize: '1.4rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
+            {formatDuration(elapsedSeconds)}
+          </div>
+        </div>
+
+        <button
+          onClick={handleUndo}
+          className="btn btn-secondary"
           disabled={state.history.length === 0}
           style={{ padding: '8px', opacity: state.history.length === 0 ? 0.5 : 1 }}
         >
@@ -108,7 +128,7 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
         {state.setHistory.length > 0 && (
           <div style={{ borderTop: '1px solid var(--border-color)', padding: '8px 16px' }}>
             <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: 4 }}>Set History</div>
-            <div style={{ display: 'flex', gap: 12 }}>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
               {state.setHistory.map((s, i) => (
                 <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.9rem' }}>
                   <span style={{ fontWeight: 600, color: 'var(--text-secondary)', marginRight: 2 }}>S{i + 1}</span>
@@ -121,6 +141,9 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
                     fontWeight: 700,
                     color: s.playerB > s.playerA ? 'var(--p2-color)' : 'var(--text-secondary)'
                   }}>{s.playerB}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: 2 }}>
+                    ({formatDuration(s.duration)})
+                  </span>
                 </div>
               ))}
             </div>
@@ -130,9 +153,9 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
 
       {/* Main Points Area (Tap Targets) */}
       <div style={{ flex: 1, display: 'flex', gap: 'var(--spacing-md)', paddingBottom: 'var(--spacing-md)' }}>
-        
+
         {/* Player A Tap Area */}
-        <button 
+        <button
           onClick={() => handleScore('A')}
           style={{
             flex: 1,
@@ -153,7 +176,7 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
         </button>
 
         {/* Player B Tap Area */}
-        <button 
+        <button
           onClick={() => handleScore('B')}
           style={{
             flex: 1,
