@@ -194,7 +194,8 @@ export function resetMatch(config: MatchConfig): MatchState {
 export function formatDuration(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
+  if (m === 0) return `${s}s`;
+  return `${m}m ${s}s`;
 }
 
 export function displayPoint(points: number): string {
