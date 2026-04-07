@@ -141,9 +141,11 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
                     fontWeight: 700,
                     color: s.playerB > s.playerA ? 'var(--p2-color)' : 'var(--text-secondary)'
                   }}>{s.playerB}</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: 2 }}>
-                    ({formatDuration(s.duration)})
-                  </span>
+                  {s.duration > 0 && (
+                    <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginLeft: 2 }}>
+                      ({formatDuration(s.duration)})
+                    </span>
+                  )}
                 </div>
               ))}
             </div>

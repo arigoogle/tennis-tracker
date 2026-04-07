@@ -90,7 +90,7 @@ export function scorePoint(state: MatchState, player: 'A' | 'B'): MatchState {
     const setRes = checkSetLogic(pA.games, pB.games, config.gamesPerSet);
     if (setRes.wonSetA || setRes.wonSetB) {
       const now = Date.now();
-      const duration = Math.floor((now - state.setStartTime) / 1000);
+      const duration = state.setStartTime > 0 ? Math.floor((now - state.setStartTime) / 1000) : 0;
       if (setRes.wonSetA) {
         newSetHistory = [...newSetHistory, { playerA: pA.games, playerB: pB.games, duration }];
         pA.sets += 1;
