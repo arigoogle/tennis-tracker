@@ -16,6 +16,13 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
     return () => clearInterval(id);
   }, []);
 
+  // Heal old state that has no setStartTime
+  useEffect(() => {
+    if (state.setStartTime === 0) {
+      setState(s => ({ ...s, setStartTime: Date.now() }));
+    }
+  }, [state.setStartTime]);
+
   const elapsedSeconds = state.setStartTime > 0 ? Math.floor((now - state.setStartTime) / 1000) : 0;
 
   const handleScore = (player: 'A' | 'B') => {
