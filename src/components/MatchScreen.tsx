@@ -16,7 +16,7 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
     return () => clearInterval(id);
   }, []);
 
-  const elapsedSeconds = Math.floor((now - state.setStartTime) / 1000);
+  const elapsedSeconds = state.setStartTime > 0 ? Math.floor((now - state.setStartTime) / 1000) : 0;
 
   const handleScore = (player: 'A' | 'B') => {
     setState(s => scorePoint(s, player));
