@@ -257,7 +257,7 @@ export function displayPoint(points: number): string {
     case 2: return '30';
     case 3: return '40';
     case 4: return 'Ad';
-    case 5: return 'Golden';
+    case 5: return 'GP'; // Golden Point decider
     default: return '';
   }
 }

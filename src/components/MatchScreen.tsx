@@ -171,6 +171,9 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
           onClick={() => handleScore('A')}
           style={{
             flex: 1,
+            minWidth: 0,
+            overflow: 'hidden',
+            padding: '0 8px',
             backgroundColor: 'var(--p1-color)',
             color: 'white',
             borderRadius: 24,
@@ -181,7 +184,7 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
             boxShadow: '0 10px 15px -3px rgba(59, 130, 246, 0.4)',
           }}
         >
-          <div style={{ fontSize: '5rem', fontWeight: 800, lineHeight: 1 }}>
+          <div style={{ fontSize: 'clamp(2.5rem, 13vw, 5rem)', fontWeight: 800, lineHeight: 1 }}>
             {displayPoint(state.playerA.points)}
           </div>
           <div style={{ marginTop: '16px', fontWeight: 600, opacity: 0.8 }}>TAP TO SCORE</div>
@@ -192,6 +195,9 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
           onClick={() => handleScore('B')}
           style={{
             flex: 1,
+            minWidth: 0,
+            overflow: 'hidden',
+            padding: '0 8px',
             backgroundColor: 'var(--p2-color)',
             color: 'white',
             borderRadius: 24,
@@ -202,7 +208,7 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
             boxShadow: '0 10px 15px -3px rgba(239, 68, 68, 0.4)',
           }}
         >
-          <div style={{ fontSize: '5rem', fontWeight: 800, lineHeight: 1 }}>
+          <div style={{ fontSize: 'clamp(2.5rem, 13vw, 5rem)', fontWeight: 800, lineHeight: 1 }}>
             {displayPoint(state.playerB.points)}
           </div>
           <div style={{ marginTop: '16px', fontWeight: 600, opacity: 0.8 }}>TAP TO SCORE</div>
