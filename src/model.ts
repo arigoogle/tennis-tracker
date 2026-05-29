@@ -1,8 +1,15 @@
 export type DeuceMode = 'standard' | 'golden' | 'sudden_death';
-export type SetMode = 4 | 6 | 'infinity';
+// 'infinity' = endless set (no game cap); otherwise any positive integer.
+export type SetMode = number | 'infinity';
+// 'fixed'  = play exactly N games, higher game count wins (ties possible: 2-2).
+// 'race'   = first player to reach N games wins (optionally by a 2-game margin).
+export type SetFormat = 'fixed' | 'race';
 
 export interface MatchConfig {
   gamesPerSet: SetMode;
+  setFormat: SetFormat;
+  // Race format only: when true a set must be won by a 2-game margin.
+  winByTwoGames: boolean;
   deuceMode: DeuceMode;
   playerA: string;
   playerB: string;
@@ -33,7 +40,9 @@ export interface MatchState {
 }
 
 export const initialConfig: MatchConfig = {
-  gamesPerSet: 6,
+  gamesPerSet: 4,
+  setFormat: 'fixed',
+  winByTwoGames: true,
   deuceMode: 'standard',
   playerA: 'Player A',
   playerB: 'Player B',
@@ -87,21 +96,22 @@ export function scorePoint(state: MatchState, player: 'A' | 'B'): MatchState {
     (pA.games !== state.playerA.games || pB.games !== state.playerB.games);
 
   if (pA.points === 0 && pB.points === 0) {
-    const setRes = checkSetLogic(pA.games, pB.games, config.gamesPerSet);
-    if (setRes.wonSetA || setRes.wonSetB) {
+    const setRes = checkSetLogic(
+      pA.games,
+      pB.games,
+      config.gamesPerSet,
+      config.setFormat ?? 'fixed',
+      config.winByTwoGames ?? true,
+    );
+    if (setRes.complete) {
       const now = Date.now();
       const duration = state.setStartTime > 0 ? Math.floor((now - state.setStartTime) / 1000) : 0;
-      if (setRes.wonSetA) {
-        newSetHistory = [...newSetHistory, { playerA: pA.games, playerB: pB.games, duration }];
-        pA.sets += 1;
-        pA.games = 0;
-        pB.games = 0;
-      } else {
-        newSetHistory = [...newSetHistory, { playerA: pA.games, playerB: pB.games, duration }];
-        pB.sets += 1;
-        pB.games = 0;
-        pA.games = 0;
-      }
+      newSetHistory = [...newSetHistory, { playerA: pA.games, playerB: pB.games, duration }];
+      // A drawn set (e.g. 2-2 in a fixed 4-game set) awards no set point.
+      if (setRes.wonSetA) pA.sets += 1;
+      else if (setRes.wonSetB) pB.sets += 1;
+      pA.games = 0;
+      pB.games = 0;
       setStartTime = now;
     }
   }
@@ -153,19 +163,35 @@ function calculatePoints(scoredPoints: number, otherPoints: number, deuceMode: D
   return { scored, other, wonGame };
 }
 
-function checkSetLogic(gamesA: number, gamesB: number, gamesPerSet: SetMode) {
+function checkSetLogic(
+  gamesA: number,
+  gamesB: number,
+  gamesPerSet: SetMode,
+  setFormat: SetFormat,
+  winByTwoGames: boolean,
+) {
   if (gamesPerSet === 'infinity') {
-    return { wonSetA: false, wonSetB: false };
+    return { complete: false, wonSetA: false, wonSetB: false };
   }
-  
-  const target = gamesPerSet;
-  let wonSetA = false;
-  let wonSetB = false;
-  
-  if (gamesA >= target && (gamesA - gamesB) >= 2) wonSetA = true;
-  if (gamesB >= target && (gamesB - gamesA) >= 2) wonSetB = true;
-  
-  return { wonSetA, wonSetB };
+
+  const target = Math.max(1, Math.floor(gamesPerSet));
+
+  if (setFormat === 'fixed') {
+    // Play exactly `target` games; the set ends once they have all been
+    // played. Whoever has more games wins; an even split is a drawn set.
+    if (gamesA + gamesB < target) {
+      return { complete: false, wonSetA: false, wonSetB: false };
+    }
+    return { complete: true, wonSetA: gamesA > gamesB, wonSetB: gamesB > gamesA };
+  }
+
+  // Race format: first to `target` games. Advantage sets need a 2-game lead,
+  // but a target of 1 can never reach that, so fall back to a 1-game margin.
+  const margin = winByTwoGames && target > 1 ? 2 : 1;
+  const wonSetA = gamesA >= target && (gamesA - gamesB) >= margin;
+  const wonSetB = gamesB >= target && (gamesB - gamesA) >= margin;
+
+  return { complete: wonSetA || wonSetB, wonSetA, wonSetB };
 }
 
 export function swapServe(state: MatchState): MatchState {
@@ -196,6 +222,32 @@ export function formatDuration(seconds: number): string {
   const s = seconds % 60;
   if (m === 0) return `${s}s`;
   return `${m}m ${s}s`;
+}
+
+export function deuceLabel(mode: DeuceMode): string {
+  switch (mode) {
+    case 'standard': return 'Advantage';
+    case 'golden': return 'Golden Point';
+    case 'sudden_death': return 'Sudden Death';
+    default: return mode;
+  }
+}
+
+export function formatConfigSummary(config: MatchConfig): string {
+  const format = config.setFormat ?? 'fixed';
+  let games: string;
+  if (config.gamesPerSet === 'infinity') {
+    games = 'Endless sets';
+  } else {
+    const plural = config.gamesPerSet === 1 ? '' : 's';
+    if (format === 'fixed') {
+      games = `${config.gamesPerSet} game${plural} per set`;
+    } else {
+      const margin = (config.winByTwoGames ?? true) && config.gamesPerSet > 1 ? ', win by 2' : '';
+      games = `First to ${config.gamesPerSet} game${plural}${margin}`;
+    }
+  }
+  return `${games} · ${deuceLabel(config.deuceMode)}`;
 }
 
 export function displayPoint(points: number): string {

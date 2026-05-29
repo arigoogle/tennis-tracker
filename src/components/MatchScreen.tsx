@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { type MatchState, scorePoint, undoLastPoint, swapServe, displayPoint, formatDuration } from '../model';
+import { type MatchState, scorePoint, undoLastPoint, swapServe, displayPoint, formatDuration, formatConfigSummary } from '../model';
 import { Undo2, Settings } from 'lucide-react';
 
 interface Props {
@@ -53,6 +53,9 @@ export const MatchScreen: React.FC<Props> = ({ state, setState, onReset }) => {
           </div>
           <div style={{ fontSize: '1.4rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>
             {formatDuration(elapsedSeconds)}
+          </div>
+          <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+            {formatConfigSummary(state.config)}
           </div>
         </div>
 
