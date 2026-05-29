@@ -67,7 +67,7 @@ export const ConfigScreen: React.FC<Props> = ({ initialConfig, onStart }) => {
   return (
     <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
       <header style={{ padding: 'var(--spacing-md) 0', textAlign: 'center' }}>
-        <h1 style={{ color: 'var(--brand-primary)' }}>Tennis OS</h1>
+        <h1 style={{ color: 'var(--brand-primary)' }}>AceBoard</h1>
         <p style={{ color: 'var(--text-secondary)' }}>Match Setup</p>
       </header>
 
